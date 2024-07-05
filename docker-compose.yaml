@@ -1,0 +1,15 @@
+services:
+  derper:
+    image: derper:latest
+    restart: always
+    container_name: derper
+    hostname: derp.latte.ltd
+    ports:
+      - 3439:3439/udp
+    volumes:
+      - /var/run/tailscale/tailscaled.sock:/var/run/tailscale/tailscaled.sock
+    networks:
+      portainer: null
+networks:
+  portainer:
+    external: true
