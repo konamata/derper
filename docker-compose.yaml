@@ -1,6 +1,21 @@
+version: '3'
 services:
+  npm:
+    image: jc21/nginx-proxy-manager:latest
+    container_name: nginx-proxy-manager
+    restart: unless-stopped
+    ports:
+      - 80:80
+      - 81:81
+      - 443:443
+    volumes:
+      - ./data:/data
+      - ./letsencrypt:/etc/letsencrypt
+    networks:
+      npm: null
+
   derper:
-    image: derper:latest
+    build: .
     restart: always
     container_name: derper
     hostname: derp.latte.ltd
@@ -9,7 +24,8 @@ services:
     volumes:
       - /var/run/tailscale/tailscaled.sock:/var/run/tailscale/tailscaled.sock
     networks:
-      portainer: null
+      npm: null
+
 networks:
-  portainer:
-    external: true
+  npm:
+    name: npm

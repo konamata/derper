@@ -1,8 +1,8 @@
 # Tailscale Derp Server
 
-Although tailscale derp supports automatic SSL certificate generation, it is not always convenient. This repository uses [NginxProxyManager](https://github.com/NginxProxyManager/nginx-proxy-manager)(NPM) as a reverse proxy for derp, Which provides a more convenient and flexible way to configure SSL.
+Although Tailscale DERP supports automatic SSL certificate generation, it is not always convenient. This setup uses NginxProxyManager [NginxProxyManager](https://github.com/NginxProxyManager/nginx-proxy-manager)(NPM) as a reverse proxy for DERP, which provides a more convenient and flexible way to configure SSL.
 
-With NPM, you can use the DNS-01 challenge to obtain an SSL certificate or even upload the SSL certificate manually. This is extremely convenient in countries where certain HTTP-01 challenge are blocked.
+With NPM, you can use the DNS-01 challenge to obtain an SSL certificate or even upload the SSL certificate manually. This is extremely convenient in countries where certain HTTP-01 challenges are blocked.
 
 ##  TL;DR
 
@@ -12,45 +12,39 @@ With NPM, you can use the DNS-01 challenge to obtain an SSL certificate or even 
   version: '3'
   services:
     npm:
-      image: 'jc21/nginx-proxy-manager:latest'
+      image: jc21/nginx-proxy-manager:latest
+      container_name: nginx-proxy-manager
       restart: unless-stopped
+      ports:
+        - 80:80
+        - 81:81
+        - 443:443
       volumes:
         - ./data:/data
         - ./letsencrypt:/etc/letsencrypt
-      ports:
-        - '127.0.0.1:81:81'
-        - '233:443'
-    derp:
+      networks:
+        npm: null
+    derper:
       build: .
       restart: always
+      container_name: derper
+      hostname: derp.latte.ltd
       ports:
-        - "3478:3478/udp"
+        - 3439:3439/udp
       volumes:
-        - "/var/run/tailscale/tailscaled.sock:/var/run/tailscale/tailscaled.sock"
+        - /var/run/tailscale/tailscaled.sock:/var/run/tailscale/tailscaled.sock
+      networks:
+        npm: null
+  networks:
+    npm:
+      name: npm
   ```
 
-2. Start with `docker compse`
+2. Start with `docker compose`
 
   ```shell
   docker compose up -d	
   ```
-
-3. Login to NPM WebUI
-
-To log in to NPM using SSH local forwarding and access it at [http://127.0.0.1:8881](http://127.0.0.1:8881/), you can use the following command:
-
- ```
- ssh -L 8881:localhost:81 user@yourhost
- ```
-
- Replace `user@example.com` with your SSH username and server address. Once you establish the SSH connection, you can access NPM in your browser by navigating to [http://127.0.0.1:8881](http://127.0.0.1:8881/).
-
- As for the default username and password, you mentioned using `admin@example.com` as the username and `changeme` as the password. Please make sure to change the password to a secure one after logging in for the first time to ensure the security of your NPM installation.
-
-4. Setup SSL and Proxy
-
-NPM provides a user-friendly interface that simplifies the process of setting up a reverse proxy and SSL. You can find detailed instructions on how to configure it in the documentation available at [doc](https://nginxproxymanager.com/guide/). By the way, **please ensure that the proxy is set to point to http://derp:80**.
-
 
 # With Headscale
 
@@ -58,17 +52,17 @@ As [derp example](https://github.com/juanfont/headscale/blob/main/derp-example.y
 
 ```yaml
 regions:
-  900:
-    regionid: 900
-    regioncode: custom
-    regionname: My Region
+  901:
+    regionid: 901
+    regioncode: ist
+    regionname: Istanbul
     nodes:
-      - name: 900a
-        regionid: 900
-        hostname: myderp.mydomain.no
-        ipv4: 123.123.123.123
-        ipv6: "2604:a880:400:d1::828:b001"
-        stunport: 3478
+      - name: 901a
+        regionid: 901
+        hostname: derp.latte.ltd
+        ipv4: 46.31.77.160
+        ipv6: ""
+        stunport: 3439
         stunonly: false
-        derpport: 233
+        derpport: 443
 ```
