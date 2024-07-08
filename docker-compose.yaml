@@ -16,7 +16,7 @@ services:
 
   derper:
 #    build: .
-    image: bariiss/derper:amd64 # or amd64
+    image: bariiss/derper:amd64 # or arm64
     restart: always
     container_name: derper
     hostname: derp.latte.ltd
