@@ -38,7 +38,7 @@ jobs:
       id: tag-check
       run: |
         echo "Checking if tag ${{ steps.get-latest-tag.outputs.LATEST_TAG }} exists"
-        git ls-remote --tags origin | grep "refs/tags/${{ steps.get-latest-tag.outputs.LATEST_TAG }}" >/dev/null 2>&1
+        git ls-remote --tags origin | grep "refs/tags/${{ steps.get-latest-tag.outputs.LATEST_TAG }}" >/dev/null 2>&1 || true
         TAG_EXISTS=$?
         echo "Remote tag existence status: $TAG_EXISTS"
         if [ $TAG_EXISTS -eq 0 ]; then
