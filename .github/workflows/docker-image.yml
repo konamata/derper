@@ -38,11 +38,7 @@ jobs:
       id: tag-check
       run: |
         # Check if the tag already exists in the repository
-        echo "Checking if tag ${{ steps.get-latest-tag.outputs.LATEST_TAG }} exists"
-        git rev-parse "refs/tags/${{ steps.get-latest-tag.outputs.LATEST_TAG }}" >/dev/null 2>&1
-        TAG_EXISTS=$?
-        echo "Tag existence status: $TAG_EXISTS"
-        if [ $TAG_EXISTS -eq 0 ]; then
+        if git tag -l | grep -q ${{ steps.get-latest-tag.outputs.LATEST_TAG }}; then
           echo "exists=true" >> $GITHUB_OUTPUT
         else
           echo "exists=false" >> $GITHUB_OUTPUT
