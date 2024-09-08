@@ -9,9 +9,6 @@ on:
     branches: [ "main" ]
   workflow_dispatch:
 
-env:
-  NO_CACHE: true
-
 jobs:
   build-and-push:
     runs-on: vdf
@@ -25,7 +22,9 @@ jobs:
         go-version: ${{ vars.GO_VERSION }}
 
     - name: Fetch all tags
-      run: git fetch --tags
+      run: |
+        git fetch --tags
+        echo "TAGS=$(git tag -l)" >> $GITHUB_ENV
 
     - name: Get latest version tag
       id: get-latest-tag
@@ -48,6 +47,12 @@ jobs:
         else
           echo "exists=false" >> $GITHUB_OUTPUT
         fi
+
+    - name: Remove if tag exists
+      if: steps.tag-check.outputs.exists == 'true'
+      run: |
+        git tag -d ${{ steps.get-latest-tag.outputs.LATEST_TAG }}
+        git push --delete origin ${{ steps.get-latest-tag.outputs.LATEST_TAG }}
 
     - name: Skip build if tag exists
       if: steps.tag-check.outputs.exists == 'true'
@@ -82,7 +87,7 @@ jobs:
           ghcr.io/${{ github.repository }}:${{ steps.get-latest-tag.outputs.LATEST_TAG }}
         build-args: |
           BUILDPLATFORM=${{ runner.os }}/${{ runner.arch }}
-          NO_CACHE=${{ env.NO_CACHE }}
+          NO_CACHE=${{ vars.NO_CACHE }}
 
     - name: Create Git tag
       if: steps.tag-check.outputs.exists != 'true' && success()
