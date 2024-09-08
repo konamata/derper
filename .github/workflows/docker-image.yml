@@ -96,6 +96,6 @@ jobs:
       if: steps.tag-check.outputs.exists != 'true' && success()
       run: |
         git config user.name ${{ github.actor }}
-        git config user.email ${{ github.actor }}@users.noreply.github.com
+        git config user.email ${{ vars.GIT_EMAIL }}
         git tag ${{ steps.get-latest-tag.outputs.LATEST_TAG }}
         git push origin ${{ steps.get-latest-tag.outputs.LATEST_TAG }}
