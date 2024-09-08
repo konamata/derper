@@ -73,6 +73,7 @@ jobs:
         build-args: |
           BUILDPLATFORM=${{ runner.os }}/${{ runner.arch }}
           NO_CACHE=${{ vars.NO_CACHE }}
+        provenance: false
 
     - name: Remove Git tag if exists
       if: steps.tag-check.outputs.exists != 'true' && success()
