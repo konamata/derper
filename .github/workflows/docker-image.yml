@@ -44,12 +44,6 @@ jobs:
           echo "exists=false" >> $GITHUB_OUTPUT
         fi
 
-    - name: Remove if tag exists
-      if: steps.tag-check.outputs.exists == 'true'
-      run: |
-        git tag -d ${{ steps.get-latest-tag.outputs.LATEST_TAG }}
-        git push --delete origin ${{ steps.get-latest-tag.outputs.LATEST_TAG }}
-
     - name: Skip build if tag exists
       if: steps.tag-check.outputs.exists == 'true'
       run: echo "Skipping build as the tag already exists."
