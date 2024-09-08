@@ -14,7 +14,7 @@ env:
 
 jobs:
   build-and-push:
-    runs-on: ubuntu-latest  # Adjust runner if necessary
+    runs-on: vdf
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -22,7 +22,7 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v4
       with:
-        go-version: '1.23'
+        go-version: ${{ vars.GO_VERSION }}
 
     - name: Fetch all tags
       run: git fetch --tags
@@ -56,17 +56,6 @@ jobs:
       if: steps.tag-check.outputs.exists != 'true'
       uses: docker/setup-buildx-action@v3
 
-    - name: Cache Go modules
-      if: steps.tag-check.outputs.exists != 'true'
-      uses: actions/cache@v3
-      with:
-        path: |
-          ~/go/pkg/mod
-          ~/.cache/go-build
-        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-        restore-keys: |
-          ${{ runner.os }}-go-
-
     - name: Login to GitHub Container Registry
       if: github.event_name != 'pull_request' && steps.tag-check.outputs.exists != 'true'
       uses: docker/login-action@v3
@@ -77,6 +66,7 @@ jobs:
 
     - name: Build and push Docker image
       if: steps.tag-check.outputs.exists != 'true'
+
       uses: docker/build-push-action@v5
       with:
         context: .
