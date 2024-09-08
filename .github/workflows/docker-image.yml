@@ -41,11 +41,7 @@ jobs:
         git ls-remote --tags origin | grep "refs/tags/${{ steps.get-latest-tag.outputs.LATEST_TAG }}" || true
         TAG_EXISTS=$?
         echo "Remote tag existence status: $TAG_EXISTS"
-        if [ $TAG_EXISTS -eq 0 ]; then
-          echo "exists=true" >> $GITHUB_OUTPUT
-        else
-          echo "exists=false" >> $GITHUB_OUTPUT
-        fi
+        echo "exists=$TAG_EXISTS" >> $GITHUB_OUTPUT
 
     - name: Skip build if tag exists
       if: steps.tag-check.outputs.exists == 'true'
