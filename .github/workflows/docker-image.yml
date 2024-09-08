@@ -78,6 +78,12 @@ jobs:
           BUILDPLATFORM=${{ runner.os }}/${{ runner.arch }}
           NO_CACHE=${{ vars.NO_CACHE }}
 
+    - name: Remove Git tag if exists
+      if: steps.tag-check.outputs.exists == 'true'
+      run: |
+        git tag -d ${{ steps.get-latest-tag.outputs.LATEST_TAG }}
+        git push origin :refs/tags/${{ steps.get-latest-tag.outputs.LATEST_TAG }}
+
     - name: Create Git tag
       if: steps.tag-check.outputs.exists != 'true' && success()
       run: |
