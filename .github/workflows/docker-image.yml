@@ -19,24 +19,28 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: 'latest'
+
     - name: Fetch all tags
       run: git fetch --tags
 
     - name: Get latest version tag
       id: get-latest-tag
       run: |
-        LATEST_TAG=$(go list -m -versions tailscale.com | tr ' ' '\n' | grep -v '\-pre' | sort -V | tail -n 1)
-        echo "::set-output name=LATEST_TAG::${LATEST_TAG}"
+        LATEST_TAG=$(go list -m -versions ${{ vars.GO_REPO }} | tr ' ' '\n' | grep -v '\-pre' | sort -V | tail -n 1)
+        echo "LATEST_TAG=$LATEST_TAG"
+        echo "LATEST_TAG=$LATEST_TAG" >> $GITHUB_OUTPUT
 
     - name: Check if tag exists
       id: tag-check
       run: |
         if git rev-parse "refs/tags/${{ steps.get-latest-tag.outputs.LATEST_TAG }}" >/dev/null 2>&1; then
-          echo "Tag ${{ steps.get-latest-tag.outputs.LATEST_TAG }} already exists."
-          echo "::set-output name=exists::true"
+          echo "exists=true" >> $GITHUB_OUTPUT
         else
-          echo "Tag ${{ steps.get-latest-tag.outputs.LATEST_TAG }} does not exist."
-          echo "::set-output name=exists::false"
+          echo "exists=false" >> $GITHUB_OUTPUT
         fi
 
     - name: Skip build if tag exists
@@ -77,9 +81,9 @@ jobs:
         cache-to: type=gha,mode=max
 
     - name: Create Git tag
-      if: steps.tag-check.outputs.exists != 'true'
+      if: steps.tag-check.outputs.exists != 'true' && success()
       run: |
-        git config user.name "github-actions"
-        git config user.email "github-actions@github.com"
+        git config user.name ${{ github.actor }}
+        git config user.email ${{ github.actor }}@users.noreply.github.com
         git tag ${{ steps.get-latest-tag.outputs.LATEST_TAG }}
         git push origin ${{ steps.get-latest-tag.outputs.LATEST_TAG }}
