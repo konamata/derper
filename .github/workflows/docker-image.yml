@@ -79,8 +79,6 @@ jobs:
         build-args: |
           BUILDPLATFORM=${{ runner.os }}/${{ runner.arch }}
           NO_CACHE=${{ env.NO_CACHE }}
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
 
     - name: Create Git tag
       if: steps.tag-check.outputs.exists != 'true' && success()
