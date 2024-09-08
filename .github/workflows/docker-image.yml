@@ -74,17 +74,3 @@ jobs:
           BUILDPLATFORM=${{ runner.os }}/${{ runner.arch }}
           NO_CACHE=${{ vars.NO_CACHE }}
         provenance: false
-
-    - name: Remove Git tag if exists
-      if: steps.tag-check.outputs.exists != 'true' && success()
-      run: |
-        git tag -d ${{ steps.get-latest-tag.outputs.LATEST_TAG }}
-        git push origin :refs/tags/${{ steps.get-latest-tag.outputs.LATEST_TAG }}
-
-    - name: Create Git tag
-      if: steps.tag-check.outputs.exists != 'true' && success()
-      run: |
-        git config user.name ${{ github.actor }}
-        git config user.email ${{ vars.GIT_EMAIL }}
-        git tag ${{ steps.get-latest-tag.outputs.LATEST_TAG }}
-        git push origin ${{ steps.get-latest-tag.outputs.LATEST_TAG }}
