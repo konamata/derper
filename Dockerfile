@@ -9,7 +9,7 @@ ENV GOPROXY=https://goproxy.cn
 WORKDIR /app
 
 # Download and install the application dependencies
-RUN go install tailscale.com/cmd/derper@main
+RUN go install tailscale.com/cmd/derper@latest
 
 # Use an Alpine base image with GLIBC installed
 FROM alpine:latest
