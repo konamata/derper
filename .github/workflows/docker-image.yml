@@ -32,13 +32,18 @@ jobs:
       run: |
         # Fetching the latest version tag using Go modules (adjust GO_REPO if necessary)
         LATEST_TAG=$(go list -m -versions ${{ vars.GO_REPO }} | tr ' ' '\n' | grep -v '\-pre' | sort -V | tail -n 1)
+        echo "LATEST_TAG=$LATEST_TAG"
         echo "LATEST_TAG=$LATEST_TAG" >> $GITHUB_OUTPUT
 
     - name: Check if tag exists
       id: tag-check
       run: |
         # Check if the tag already exists in the repository
-        if git rev-parse "refs/tags/${{ steps.get-latest-tag.outputs.LATEST_TAG }}" >/dev/null 2>&1; then
+        echo "Checking if tag ${{ steps.get-latest-tag.outputs.LATEST_TAG }} exists"
+        git rev-parse "refs/tags/${{ steps.get-latest-tag.outputs.LATEST_TAG }}" >/dev/null 2>&1
+        TAG_EXISTS=$?
+        echo "Tag existence status: $TAG_EXISTS"
+        if [ $TAG_EXISTS -eq 0 ]; then
           echo "exists=true" >> $GITHUB_OUTPUT
         else
           echo "exists=false" >> $GITHUB_OUTPUT
@@ -66,7 +71,6 @@ jobs:
 
     - name: Build and push Docker image
       if: steps.tag-check.outputs.exists != 'true'
-
       uses: docker/build-push-action@v5
       with:
         context: .
