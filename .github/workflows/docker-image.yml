@@ -83,7 +83,7 @@ jobs:
           NO_CACHE=${{ vars.NO_CACHE }}
 
     - name: Remove Git tag if exists
-      if: success()
+      if: steps.tag-check.outputs.exists != 'true' && success()
       run: |
         git tag -d ${{ steps.get-latest-tag.outputs.LATEST_TAG }}
         git push origin :refs/tags/${{ steps.get-latest-tag.outputs.LATEST_TAG }}
