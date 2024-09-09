@@ -47,20 +47,20 @@ jobs:
           echo "exists=false" >> $GITHUB_OUTPUT
         fi
       
-    - name: Skip build if tag exists
-      if: steps.tag-check.outputs.exists == 'true'
+    - name: Skip build if tag exists (for non-dispatch events)
+      if: steps.tag-check.outputs.exists == 'true' && github.event_name != 'workflow_dispatch'
       run: echo "Skipping build as the tag already exists."
 
     - name: Set up QEMU
-      if: steps.tag-check.outputs.exists != 'true'
+      if: steps.tag-check.outputs.exists != 'true' || github.event_name == 'workflow_dispatch'
       uses: docker/setup-qemu-action@v3
 
     - name: Set up Docker Buildx
-      if: steps.tag-check.outputs.exists != 'true'
+      if: steps.tag-check.outputs.exists != 'true' || github.event_name == 'workflow_dispatch'
       uses: docker/setup-buildx-action@v3
 
     - name: Login to GitHub Container Registry
-      if: github.event_name != 'pull_request' && steps.tag-check.outputs.exists != 'true'
+      if: github.event_name != 'pull_request' && (steps.tag-check.outputs.exists != 'true' || github.event_name == 'workflow_dispatch')
       uses: docker/login-action@v3
       with:
         registry: ghcr.io
@@ -68,7 +68,7 @@ jobs:
         password: ${{ secrets.MY_PAT_TOKEN }}
 
     - name: Build and push Docker image
-      if: steps.tag-check.outputs.exists != 'true'
+      if: steps.tag-check.outputs.exists != 'true' || github.event_name == 'workflow_dispatch'
       uses: docker/build-push-action@v5
       with:
         context: .
