@@ -72,7 +72,6 @@ jobs:
         tags: |
           ghcr.io/${{ github.repository }}:latest
           ghcr.io/${{ github.repository }}:${{ steps.get-latest-tag.outputs.LATEST_TAG }}
-        build-args: |
-          BUILDPLATFORM=${{ runner.os }}/${{ runner.arch }}
-          NO_CACHE=${{ vars.NO_CACHE }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
         provenance: false
