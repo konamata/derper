@@ -25,11 +25,6 @@ jobs:
       with:
         go-version: ${{ vars.GO_VERSION }}
 
-    - name: Fetch all tags
-      run: |
-        git fetch --tags
-        echo "TAGS=$(git tag -l)" >> $GITHUB_ENV
-
     - name: Get latest version tag
       id: get-latest-tag
       run: |
@@ -43,15 +38,11 @@ jobs:
       run: |
         if docker manifest inspect ghcr.io/${{ github.repository }}:${{ steps.get-latest-tag.outputs.LATEST_TAG }} > /dev/null 2>&1; then
           echo "exists=true" >> $GITHUB_OUTPUT
-          echo "${{ steps.get-latest-tag.outputs.LATEST_TAG }} already exists in ghcr.io"
+          echo "${{ steps.get-latest-tag.outputs.LATEST_TAG }} already exists in ghcr.io. Skipping build."
         else
           echo "exists=false" >> $GITHUB_OUTPUT
-          echo "${{ steps.get-latest-tag.outputs.LATEST_TAG }} does not exist in ghcr.io"
+          echo "${{ steps.get-latest-tag.outputs.LATEST_TAG }} does not exist in ghcr.io yet. Proceeding with build."
         fi
-
-    - name: Skip build if tag exists
-      if: steps.tag-check.outputs.exists == 'true'
-      run: echo "Skipping build as the tag already exists."
 
     - name: Set up QEMU
       if: steps.tag-check.outputs.exists != 'true'
