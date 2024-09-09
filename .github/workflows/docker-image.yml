@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   build-and-push:
-    runs-on: vdf
+    runs-on: ${{ vars.RUNNER_OS }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
