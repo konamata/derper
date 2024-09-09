@@ -5,7 +5,7 @@ This repository contains the necessary files to build and run a Docker container
 ## Contents
 
 - `Dockerfile`: Defines the multi-stage build process for the derper service.
-- `docker-compose.yaml`: Provides an easy way to run the derper container.
+- `docker-compose.yml`: Provides an easy way to run the derper container.
 - `.github/workflows/docker-image.yml`: GitHub Actions workflow for building and pushing multi-architecture Docker images.
 
 ## Dockerfile
