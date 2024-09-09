@@ -13,6 +13,7 @@ RUN go install tailscale.com/cmd/derper@latest
 
 # Use an Alpine base image with GLIBC installed
 FROM alpine:latest
+LABEL org.opencontainers.image.source = "https://github.com/konamata/derper"
 
 # Install GLIBC
 RUN apk add --no-cache libc6-compat
