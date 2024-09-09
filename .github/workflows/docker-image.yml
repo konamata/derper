@@ -33,7 +33,6 @@ jobs:
     - name: Get latest version tag
       id: get-latest-tag
       run: |
-        # Fetching the latest version tag using Go modules (adjust GO_REPO if necessary)
         LATEST_TAG=$(go list -m -versions ${{ vars.GO_REPO }} | tr ' ' '\n' | grep -v '\-pre' | sort -V | tail -n 1)
         echo "LATEST_TAG=$LATEST_TAG"
         echo "LATEST_TAG=$LATEST_TAG" >> $GITHUB_OUTPUT
