@@ -1,4 +1,4 @@
-FROM golang:1.23 AS builder
+FROM ghcr.io/bariiss/golang-upx:1.23.1-bookworm AS builder
 
 ENV GO111MODULE=on
 ENV GOPROXY=https://goproxy.cn
