@@ -36,7 +36,7 @@ To run the derper service using Docker Compose:
 3. Run the following command in the repository root:
 
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 This will start the derper service, exposing ports 8039 (TCP) and 3439 (UDP).
