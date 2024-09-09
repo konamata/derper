@@ -41,8 +41,12 @@ jobs:
     - name: Check if tag exists in ghcr.io
       id: tag-check
       run: |
-        if ghcr.io/${{ github.repository }}:${{ steps.get-latest-tag.outputs.LATEST_TAG }}; then
+        if docker manifest inspect ghcr.io/${{ github.repository }}:${{ steps.get-latest-tag.outputs.LATEST_TAG }} > /dev/null 2>&1; then
           echo "exists=true" >> $GITHUB_OUTPUT
+          echo "${{ steps.get-latest-tag.outputs.LATEST_TAG }} already exists in ghcr.io"
+        else
+          echo "exists=false" >> $GITHUB_OUTPUT
+          echo "${{ steps.get-latest-tag.outputs.LATEST_TAG }} does not exist in ghcr.io"
         fi
 
     - name: Skip build if tag exists
