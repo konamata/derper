@@ -34,10 +34,12 @@ jobs:
         echo "LATEST_TAG=$LATEST_TAG"
         echo "LATEST_TAG=$LATEST_TAG" >> $GITHUB_OUTPUT
 
-    - name: Check if tag exists
+    - name: Check if tag exists in ghcr.io
       id: tag-check
       run: |
-        echo "exists=false" >> $GITHUB_OUTPUT
+        if ghcr.io/${{ github.repository }}:${{ steps.get-latest-tag.outputs.LATEST_TAG }}; then
+          echo "exists=true" >> $GITHUB_OUTPUT
+        fi
 
     - name: Skip build if tag exists
       if: steps.tag-check.outputs.exists == 'true'
