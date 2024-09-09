@@ -25,13 +25,36 @@ jobs:
       with:
         go-version: ${{ vars.GO_VERSION }}
 
+    - name: Get latest version tag
+      id: get-latest-tag
+      run: |
+        LATEST_TAG=$(go list -m -versions ${{ vars.GO_REPO }} | tr ' ' '\n' | grep -v '\-pre' | sort -V | tail -n 1)
+        echo "LATEST_TAG=$LATEST_TAG"
+        echo "LATEST_TAG=$LATEST_TAG" >> $GITHUB_OUTPUT
+
+    - name: Check if tag exists in ghcr.io
+      id: tag-check
+      run: |
+        if docker manifest inspect ghcr.io/${{ github.repository }}:${{ steps.get-latest-tag.outputs.LATEST_TAG }} > /dev/null 2>&1; then
+          echo "exists=true" >> $GITHUB_OUTPUT
+        else
+          echo "exists=false" >> $GITHUB_OUTPUT
+        fi
+      
+    - name: Skip build if tag exists (for non-dispatch events)
+      if: steps.tag-check.outputs.exists == 'true' && github.event_name != 'workflow_dispatch'
+      run: echo "Skipping build as the tag already exists."
+
     - name: Set up QEMU
+      if: steps.tag-check.outputs.exists != 'true' || github.event_name == 'workflow_dispatch'
       uses: docker/setup-qemu-action@v3
 
     - name: Set up Docker Buildx
+      if: steps.tag-check.outputs.exists != 'true' || github.event_name == 'workflow_dispatch'
       uses: docker/setup-buildx-action@v3
 
     - name: Login to GitHub Container Registry
+      if: github.event_name != 'pull_request' && (steps.tag-check.outputs.exists != 'true' || github.event_name == 'workflow_dispatch')
       uses: docker/login-action@v3
       with:
         registry: ghcr.io
@@ -39,13 +62,16 @@ jobs:
         password: ${{ secrets.MY_PAT_TOKEN }}
 
     - name: Build and push Docker image
+      if: steps.tag-check.outputs.exists != 'true' || github.event_name == 'workflow_dispatch'
       uses: docker/build-push-action@v5
       with:
         context: .
         file: Dockerfile
         platforms: ${{ vars.DOCKER_PLATFORMS }}
         push: true
-        tags: ghcr.io/${{ github.repository }}:latest
+        tags: |
+          ghcr.io/${{ github.repository }}:latest
+          ghcr.io/${{ github.repository }}:${{ steps.get-latest-tag.outputs.LATEST_TAG }}
         build-args: |
           BUILDPLATFORM=${{ runner.os }}/${{ runner.arch }}
           NO_CACHE=${{ vars.NO_CACHE }}
