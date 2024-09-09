@@ -8,7 +8,7 @@ WORKDIR /app
 RUN go install tailscale.com/cmd/derper@latest
 
 FROM alpine:latest AS final
-LABEL org.opencontainers.image.source = "https://ghcr.io/konamata/derper"
+LABEL org.opencontainers.image.source "https://ghcr.io/konamata/derper"
 
 RUN apk add --no-cache libc6-compat
 
