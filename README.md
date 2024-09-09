@@ -1,68 +1,64 @@
-# Tailscale Derp Server
+# Derper Docker
 
-Although Tailscale DERP supports automatic SSL certificate generation, it is not always convenient. This setup uses [NginxProxyManager](https://github.com/NginxProxyManager/nginx-proxy-manager) (NPM) as a reverse proxy for DERP, which provides a more convenient and flexible way to configure SSL.
+This repository contains the necessary files to build and run a Docker container for the `derper` service, which is part of the Tailscale ecosystem.
 
-With NPM, you can use the DNS-01 challenge to obtain an SSL certificate or even upload the SSL certificate manually. This is extremely convenient in countries where certain HTTP-01 challenges are blocked.
+## Contents
 
-##  TL;DR
+- `Dockerfile`: Defines the multi-stage build process for the derper service.
+- `docker-compose.yaml`: Provides an easy way to run the derper container.
+- `.github/workflows/docker-image.yml`: GitHub Actions workflow for building and pushing multi-architecture Docker images.
 
-1. Modify the port configuration in `docker-compose.yaml` as desired.
+## Dockerfile
 
-  ```yaml
-  version: '3'
-  services:
-    npm:
-      image: jc21/nginx-proxy-manager:latest
-      container_name: nginx-proxy-manager
-      restart: unless-stopped
-      ports:
-        - 80:80
-        - 81:81
-        - 443:443
-      volumes:
-        - ./data:/data
-        - ./letsencrypt:/etc/letsencrypt
-      networks:
-        npm: null
-    derper:
-      build: .
-      restart: always
-      container_name: derper
-      hostname: derp.latte.ltd
-      ports:
-        - 3439:3439/udp
-      volumes:
-        - /var/run/tailscale/tailscaled.sock:/var/run/tailscale/tailscaled.sock
-      networks:
-        npm: null
-  networks:
-    npm:
-      name: npm
-  ```
+The Dockerfile uses a multi-stage build process:
 
-2. Start with `docker compose`
+1. It starts with the `ghcr.io/bariiss/golang-upx:1.23.1-bookworm` base image for building.
+2. It installs the latest version of `derper` from the Tailscale repository.
+3. The binary is compressed using UPX for size reduction.
+4. The final stage uses a `scratch` image for minimal size, copying only the necessary files.
 
-  ```shell
-  docker compose up -d	
-  ```
+## GitHub Actions Workflow
 
-# With Headscale
+The workflow (`docker-image.yml`) does the following:
 
-As [derp example](https://github.com/juanfont/headscale/blob/main/derp-example.yaml) in Headscale repo:
+- Triggered on push to main, pull requests to main, a daily schedule, and manual dispatch.
+- Checks out the code and sets up Go.
+- Fetches the latest Tailscale version tag.
+- Checks if a Docker image for this tag already exists.
+- If the image doesn't exist (or on manual dispatch), it builds and pushes a multi-architecture Docker image to GitHub Container Registry.
 
-```yaml
-regions:
-  901:
-    regionid: 901
-    regioncode: ist
-    regionname: Istanbul
-    nodes:
-      - name: 901a
-        regionid: 901
-        hostname: derp.latte.ltd
-        ipv4: 46.31.77.160
-        ipv6: ""
-        stunport: 3439
-        stunonly: false
-        derpport: 443
+## Usage
+
+To run the derper service using Docker Compose:
+
+1. Ensure you have Docker and Docker Compose installed.
+2. Clone this repository.
+3. Run the following command in the repository root:
+
+```bash
+docker-compose up -d
 ```
+
+This will start the derper service, exposing ports 8039 (TCP) and 3439 (UDP).
+
+## Building Manually
+
+If you want to build the image manually:
+
+```bash
+docker build -t derper .
+```
+
+Then run it with:
+
+```bash
+docker run -p 8039:8039 -p 3439:3439/udp derper
+```
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+
+Please add appropriate license information here.
