@@ -16,6 +16,7 @@ concurrency:
 jobs:
   build-and-push:
     runs-on: ${{ vars.RUNNER_OS }}
+    timeout-minutes: ${{ vars.TIMEOUT_MINUTES }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
