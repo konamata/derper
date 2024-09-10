@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-configmap
+  labels:
+    {{- include "xooi-metabase-netlog.labels" . | nindent 4 }}
+  namespace: {{ .Values.namespace }}
+data:
+  MB_DB_CONNECTION_URI: "jdbc:postgresql://db.xooi.com:5432/NetCRM?user=postgres&password=r7c7HwpoubJmD0hF&currentSchema=metabase"   
+  JAVA_OPTS: "-Xmx1300m"
+  MB_PLUGINS_DIR: /plugins

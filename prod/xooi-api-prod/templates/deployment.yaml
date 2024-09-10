@@ -1,0 +1,87 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: {{ include "xooi-api-prod.fullname" . }}
+  labels:
+    {{- include "xooi-api-prod.labels" . | nindent 4 }}
+spec:
+  {{- if or .Values.maintenanceMode.enabled (not .Values.autoscaling.enabled) }}
+  replicas: {{ if .Values.maintenanceMode.enabled }}{{.Values.maintenanceMode.replicaCount}}{{ else }}{{ .Values.replicaCount }}{{ end }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "xooi-api-prod.selectorLabels" . | nindent 6 }}
+  strategy:
+    blueGreen:
+      activeService: {{ include "xooi-api-prod.fullname" . }}
+      previewService: {{ include "xooi-api-prod.fullname" . }}-preview
+      autoPromotionEnabled: false
+      previewReplicaCount: 0
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "xooi-api-prod.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "xooi-api-prod.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          envFrom:
+          - configMapRef:
+              name: "xooi-utility-prod"
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.targetPort }}
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: {{ if .Values.maintenanceMode.enabled }}{{.Values.maintenanceMode.livenessProbe.initialDelaySeconds}}{{ else }}30{{ end }}
+            timeoutSeconds: 15
+            periodSeconds: 10
+            failureThreshold: 10
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: {{ if .Values.maintenanceMode.enabled }}{{.Values.maintenanceMode.readinessProbe.initialDelaySeconds}}{{ else }}30{{ end }}
+            timeoutSeconds: 15
+            periodSeconds: 10
+            failureThreshold: 10
+          resources:
+            {{- if .Values.maintenanceMode.enabled }}
+              {{- toYaml .Values.maintenanceMode.resources | nindent 12 }}
+            {{- else }}
+              {{- toYaml .Values.resources | nindent 12 }}
+            {{- end }}
+      initContainers:
+        - name: init-services
+          image: busybox:1.28
+          command: ['sh', '-c', "for i in {1..100}; do sleep 1; if nslookup db.xooi.com; then exit 0; fi; done; exit"]
+      nodeSelector:
+        {{- if .Values.maintenanceMode.enabled }} {{ toYaml .Values.maintenanceMode.nodeSelector | nindent 8 | trimSuffix "\n" }}
+        {{- else }} {{ toYaml .Values.nodeSelector | nindent 8 | trimSuffix "\n" }}
+        {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+        

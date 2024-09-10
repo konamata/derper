@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-configmap
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "xooi-metabase-palex.labels" . | nindent 4 }}
+data:
+  MB_DB_CONNECTION_URI: "jdbc:postgresql://db.xooi.com:5432/PalexCRM?user=postgres&password=r7c7HwpoubJmD0hF&currentSchema=metabase"     
+  JAVA_OPTS: "-Xmx1g"

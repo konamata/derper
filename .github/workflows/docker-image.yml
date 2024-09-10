@@ -15,6 +15,7 @@ concurrency:
 
 jobs:
   build-and-push:
+    name: Build and push Docker image
     runs-on: ${{ vars.RUNNER_OS }}
     timeout-minutes: 5
     steps:

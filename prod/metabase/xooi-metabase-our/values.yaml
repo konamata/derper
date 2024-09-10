@@ -1,0 +1,67 @@
+replicaCount: 1
+podLabels:
+  app.kubernetes.io/group: metabase
+namespace: metabase
+image:
+  repository: 558207650175.dkr.ecr.eu-west-1.amazonaws.com/xooi-metabase-arm64
+  pullPolicy: Always
+  tag: v0.50.24
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+serviceAccount:
+  create: true
+  annotations: {}
+  name: xooi-metabase-our
+podAnnotations: {}
+podSecurityContext: {}
+securityContext: {}
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 3000
+  clusterIP: 172.20.77.225
+ingress:
+  enabled: true
+  className: ""
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/group.name: xooi-metabase-prod
+    alb.ingress.kubernetes.io/load-balancer-name: xooi-metabase-prod
+    alb.ingress.kubernetes.io/load-balancer-attributes: idle_timeout.timeout_seconds=3600,routing.http2.enabled=true,routing.http.drop_invalid_header_fields.enabled=true,deletion_protection.enabled=true,access_logs.s3.enabled=true,access_logs.s3.bucket=xooi-load-balancer-logging,access_logs.s3.prefix=xooi-metabase-prod
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/target-group-attributes: stickiness.enabled=true,stickiness.lb_cookie.duration_seconds=60
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80},{"HTTPS":443}]'
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:eu-west-1:558207650175:certificate/7d684490-39ab-4676-b085-99e52df4a11c
+    alb.ingress.kubernetes.io/ssl-redirect: "443"
+    alb.ingress.kubernetes.io/healthcheck-protocol: HTTP
+    alb.ingress.kubernetes.io/healthcheck-port: traffic-port
+    alb.ingress.kubernetes.io/healthcheck-path: /
+    alb.ingress.kubernetes.io/healthcheck-interval-seconds: "15"
+    alb.ingress.kubernetes.io/healthcheck-timeout-seconds: "5"
+    alb.ingress.kubernetes.io/success-codes: "200"
+    alb.ingress.kubernetes.io/healthy-threshold-count: "2"
+    alb.ingress.kubernetes.io/unhealthy-threshold-count: "2"
+  hosts:
+    - host: our.report.xooi.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+resources:
+  limits:
+    memory: 1287Mi
+  requests:
+    cpu: 693m
+    memory: 1287Mi
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+terminationGracePeriodSeconds: 60
+nodeSelector:
+  role: general
+tolerations: []
+affinity: {}

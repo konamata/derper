@@ -1,0 +1,4 @@
+namespace: default
+
+env:
+    ASPNETCORE_ENVIRONMENT: "Production"

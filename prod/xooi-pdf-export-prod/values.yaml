@@ -1,0 +1,55 @@
+replicaCount: 2
+image:
+  repository: 558207650175.dkr.ecr.eu-west-1.amazonaws.com/xooi-pdf-export-prod
+  pullPolicy: Always
+  tag: build-17e68de6-d073-41c7-a213-14abfa32ebbd
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+podAnnotations: {}
+podSecurityContext: {}
+securityContext:
+  runAsUser: 1000
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 5001
+  clusterIP: 172.20.64.34
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts:
+    - host: pdf-api.xooi.com
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: []
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 70
+nodeSelector:
+  role: general
+tolerations: []
+affinity:
+  podAntiAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchExpressions:
+            - key: app.kubernetes.io/name
+              operator: In
+              values:
+                - xooi-pdf-export-prod
+        topologyKey: kubernetes.io/hostname
+resources:
+  limits:
+    memory: 167Mi
+  requests:
+    cpu: 28m
+    memory: 167Mi

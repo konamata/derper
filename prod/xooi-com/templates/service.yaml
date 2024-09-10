@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "xooi-com.fullname" . }}
+  labels:
+    {{- include "xooi-com.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  clusterIP: {{ .Values.service.clusterIP }}
+  selector:
+    {{- include "xooi-com.selectorLabels" . | nindent 4 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "xooi-com.fullname" . }}-preview
+  labels:
+    {{- include "xooi-com.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "xooi-com.selectorLabels" . | nindent 4 }}

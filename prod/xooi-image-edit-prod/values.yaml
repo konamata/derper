@@ -1,0 +1,69 @@
+replicaCount: 2
+image:
+  repository: 558207650175.dkr.ecr.eu-west-1.amazonaws.com/xooi-image-edit-prod
+  pullPolicy: Always
+  tag: build-c1e5876b-08e8-4add-b7c6-8806822bfc67
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+podAnnotations: {}
+podSecurityContext: {}
+securityContext: {}
+service:
+  type: ClusterIP
+  port: 80
+  clusterIP: 172.20.119.105
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts:
+    - host: musoshi-api.xooi.com
+      paths:
+        - path: /
+          pathType: Prefix
+    - host: nbs-api.xooi.com
+      paths:
+        - path: /
+          pathType: Prefix
+    - host: netlog-api.xooi.com
+      paths:
+        - path: /
+          pathType: Prefix
+    - host: our-api.xooi.com
+      paths:
+        - path: /
+          pathType: Prefix
+    - host: pts-api.xooi.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 70
+nodeSelector:
+  role: general
+tolerations: []
+affinity:
+  podAntiAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchExpressions:
+            - key: app.kubernetes.io/name
+              operator: In
+              values:
+                - xooi-image-edit-prod
+        topologyKey: kubernetes.io/hostname
+resources:
+  limits:
+    memory: 144Mi
+  requests:
+    cpu: 10m
+    memory: 144Mi

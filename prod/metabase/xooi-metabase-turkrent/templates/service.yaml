@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "xooi-metabase-turkrent.fullname" . }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "xooi-metabase-turkrent.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  clusterIP: {{ .Values.service.clusterIP }}
+  selector:
+    {{- include "xooi-metabase-turkrent.selectorLabels" . | nindent 4 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "xooi-metabase-turkrent.fullname" . }}-preview
+  labels:
+    {{- include "xooi-metabase-turkrent.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "xooi-metabase-turkrent.selectorLabels" . | nindent 4 }}
