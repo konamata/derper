@@ -17,7 +17,6 @@ jobs:
   build-and-push:
     name: Build and push Docker image
     runs-on: ${{ vars.RUNNER_OS }}
-    timeout-minutes: 5
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
