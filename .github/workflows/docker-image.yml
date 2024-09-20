@@ -21,11 +21,6 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Set up Go
-      uses: actions/setup-go@v5
-      with:
-        go-version: ${{ vars.GO_VERSION }}
-
     - name: Get latest version tag
       id: get-latest-tag
       run: |
