@@ -11,7 +11,7 @@ on:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   build-and-push:
@@ -71,6 +71,7 @@ jobs:
           file: Dockerfile
           platforms: ${{ vars.DOCKER_PLATFORMS }}
           push: true
+          no-cache: true
           tags: |
             ghcr.io/${{ github.repository }}:latest
             ghcr.io/${{ github.repository }}:${{ steps.get-latest-tag.outputs.LATEST_TAG }}
