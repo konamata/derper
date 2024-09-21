@@ -10,7 +10,6 @@ RUN go install tailscale.com/cmd/derper@latest
 RUN upx --ultra-brute /go/bin/derper && upx -t /go/bin/derper
 
 FROM scratch AS final
-LABEL org.opencontainers.image.source "https://ghcr.io/konamata/derper"
 
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /go/bin/derper /usr/local/bin/derper
