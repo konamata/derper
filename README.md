@@ -1,22 +1,22 @@
-# Derper Docker
+# Tailscale Derper (Docker)
 
-This repository contains the necessary files to build and run a Docker container for the `derper` service, which is part of the Tailscale ecosystem.
+This repository contains the necessary files to build and run a Docker container for the `derper` service, which is part of the `Tailscale` ecosystem.
 
-## Contents
+## 📂 Contents
 
 - `Dockerfile`: Defines the multi-stage build process for the derper service.
 - `.github/workflows/docker-image.yml`: GitHub Actions workflow for building and pushing multi-architecture Docker images.
 
-## Dockerfile
+## 🛠 Dockerfile Overview
 
 The Dockerfile uses a multi-stage build process:
 
-1. It starts with the `ghcr.io/bariiss/golang-upx:1.23.1-bookworm` base image for building.
-2. It installs the latest version of `derper` from the Tailscale repository.
-3. The binary is compressed using UPX for size reduction.
-4. The final stage uses a `scratch` image for minimal size, copying only the necessary files.
+1. Starts with the `ghcr.io/konamata/golang-upx:1.23.4-bookworm` base image.
+2. Installs the latest version of `derper` from the Tailscale repository.
+3. Compresses the binary using `UPX` to optimize size.
+4. Uses a `scratch` image for the final stage to keep the image minimal, copying only necessary files.
 
-## GitHub Actions Workflow
+## 🚀 GitHub Actions Workflow
 
 The workflow (`docker-image.yml`) does the following:
 
@@ -46,10 +46,10 @@ Then run pre-built image with:
 docker run -p 8039:8039 -p 3439:3439/udp ghcr.io/konamata/derper:latest
 ```
 
-## Contributing
+## 🤝 Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-## License
+## 📜 License
 
 Please add appropriate license information here.
