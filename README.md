@@ -26,7 +26,7 @@ The workflow (`docker-image.yml`) does the following:
 - Checks if a Docker image for this tag already exists.
 - If the image doesn't exist (or on manual dispatch), it builds and pushes a multi-architecture Docker image to GitHub Container Registry.
 
-## Building Manually
+## 🏗️ Manual Build Instructions
 
 If you want to build the image manually:
 
@@ -34,10 +34,16 @@ If you want to build the image manually:
 docker build -t derper .
 ```
 
-Then run it with:
+Then run local image with:
 
 ```bash
 docker run -p 8039:8039 -p 3439:3439/udp derper
+```
+
+Then run pre-built image with:
+
+```bash
+docker run -p 8039:8039 -p 3439:3439/udp ghcr.io/konamata/derper:latest
 ```
 
 ## Contributing
