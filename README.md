@@ -5,7 +5,6 @@ This repository contains the necessary files to build and run a Docker container
 ## Contents
 
 - `Dockerfile`: Defines the multi-stage build process for the derper service.
-- `docker-compose.yml`: Provides an easy way to run the derper container.
 - `.github/workflows/docker-image.yml`: GitHub Actions workflow for building and pushing multi-architecture Docker images.
 
 ## Dockerfile
@@ -26,20 +25,6 @@ The workflow (`docker-image.yml`) does the following:
 - Fetches the latest Tailscale version tag.
 - Checks if a Docker image for this tag already exists.
 - If the image doesn't exist (or on manual dispatch), it builds and pushes a multi-architecture Docker image to GitHub Container Registry.
-
-## Usage
-
-To run the derper service using Docker Compose:
-
-1. Ensure you have Docker and Docker Compose installed.
-2. Clone this repository.
-3. Run the following command in the repository root:
-
-```bash
-docker compose up -d
-```
-
-This will start the derper service, exposing ports 8039 (TCP) and 3439 (UDP).
 
 ## Building Manually
 
