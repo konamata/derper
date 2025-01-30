@@ -14,11 +14,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  get-latest-tag:
-    runs-on: ubuntu-latest
-    outputs:
-      LATEST_TAG: ${{ steps.get-tag.outputs.LATEST_TAG }}
-      TAG_EXISTS: ${{ steps.tag-check.outputs.exists }}
+  build-and-push:
+    name: Build and push Docker image
+    runs-on: ${{ vars.RUNNER_OS }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -30,7 +28,7 @@ jobs:
           cache: false
 
       - name: Get latest version tag
-        id: get-tag
+        id: get-latest-tag
         run: |
           LATEST_TAG=$(go list -m -versions ${{ vars.GO_REPO }} | tr ' ' '\n' | grep -v '\-pre' | sort -V | tail -n 1)
           echo "LATEST_TAG=$LATEST_TAG"
@@ -39,99 +37,42 @@ jobs:
       - name: Check if tag exists in ghcr.io
         id: tag-check
         run: |
-          if docker manifest inspect ghcr.io/${{ github.repository }}:${{ steps.get-tag.outputs.LATEST_TAG }} > /dev/null 2>&1; then
+          if docker manifest inspect ghcr.io/${{ github.repository }}:${{ steps.get-latest-tag.outputs.LATEST_TAG }} > /dev/null 2>&1; then
             echo "exists=true" >> $GITHUB_OUTPUT
           else
             echo "exists=false" >> $GITHUB_OUTPUT
           fi
 
-  build-arm64:
-    needs: get-latest-tag
-    if: needs.get-latest-tag.outputs.TAG_EXISTS == 'false' || github.event_name == 'workflow_dispatch'
-    runs-on: mac-mini-baris
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - name: Skip build if tag exists (for non-dispatch events)
+        if: steps.tag-check.outputs.exists == 'true' && github.event_name != 'workflow_dispatch'
+        run: echo "Skipping build as the tag already exists."
 
       - name: Set up QEMU
+        if: steps.tag-check.outputs.exists != 'true' || github.event_name == 'workflow_dispatch'
         uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
+        if: steps.tag-check.outputs.exists != 'true' || github.event_name == 'workflow_dispatch'
         uses: docker/setup-buildx-action@v3
 
       - name: Login to GitHub Container Registry
+        if: github.event_name != 'pull_request' && (steps.tag-check.outputs.exists != 'true' || github.event_name == 'workflow_dispatch')
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.MY_PAT_TOKEN }}
 
-      - name: Build and push ARM64 image
+      - name: Build and push Docker image
+        if: steps.tag-check.outputs.exists != 'true' || github.event_name == 'workflow_dispatch'
         uses: docker/build-push-action@v6
         with:
           context: .
           file: Dockerfile
-          platforms: linux/arm64
-          push: false
-          load: true
-          tags: ghcr.io/${{ github.repository }}:arm64
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-  build-amd64:
-    needs: get-latest-tag
-    if: needs.get-latest-tag.outputs.TAG_EXISTS == 'false' || github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.MY_PAT_TOKEN }}
-
-      - name: Build and push AMD64 image
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: Dockerfile
-          platforms: linux/amd64
-          push: false
-          load: true
-          tags: ghcr.io/${{ github.repository }}:amd64
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-  push-manifest:
-    needs: [build-arm64, build-amd64]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.MY_PAT_TOKEN }}
-
-      - name: Create and push multi-arch manifest
-        run: |
-          docker manifest create ghcr.io/${{ github.repository }}:latest \
-            --amend ghcr.io/${{ github.repository }}:amd64 \
-            --amend ghcr.io/${{ github.repository }}:arm64
-          
-          docker manifest push ghcr.io/${{ github.repository }}:latest
-
-          docker manifest create ghcr.io/${{ github.repository }}:${{ needs.get-latest-tag.outputs.LATEST_TAG }} \
-            --amend ghcr.io/${{ github.repository }}:amd64 \
-            --amend ghcr.io/${{ github.repository }}:arm64
-
-          docker manifest push ghcr.io/${{ github.repository }}:${{ needs.get-latest-tag.outputs.LATEST_TAG }}
+          platforms: ${{ vars.DOCKER_PLATFORMS }}
+          push: true
+          no-cache: true
+          tags: |
+            ghcr.io/${{ github.repository }}:latest
+            ghcr.io/${{ github.repository }}:${{ steps.get-latest-tag.outputs.LATEST_TAG }}
+          provenance: false
