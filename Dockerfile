@@ -1,4 +1,4 @@
-FROM ghcr.io/konamata/golang-upx:1.23.4-bookworm AS builder
+FROM ghcr.io/konamata/golang-upx:1.23.5-bookworm AS builder
 
 ENV GO111MODULE=on
 ENV CGO_ENABLED=0
