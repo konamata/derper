@@ -1,4 +1,4 @@
-FROM ghcr.io/konamata/golang-upx:1.23.5-bookworm AS builder
+FROM ghcr.io/konamata/golang-upx:1.24.3-bookworm AS builder
 
 ARG TARGETARCH
 ARG TARGETOS
